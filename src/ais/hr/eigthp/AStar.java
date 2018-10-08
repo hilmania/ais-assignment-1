@@ -13,54 +13,48 @@ public class AStar {
         int[] initial= new int[]{1,2,3,4,5,6,7,8,0};
         int[] goal= new int[]{0,1,2,3,4,5,6,7,8};
         int counter = 0;
-        
-        Scanner s=new Scanner(System.in);
-        System.out.println("Enter the Initial State of 8 Puzzle,Please Enter Zero at the Empty location");
-//        System.out.println(getRandomNumberInRange(0,8));
+        int count = 0;
+
         int [] initialState = randomizeArray(initial);
-        for (int element:initialState){
-            System.out.println(element);
-        }
 
         for(int i=0;i<3;i++) {
             for (int j = 0; j < 3; j++) {
-//                initialMatrix[i][j] = s.nextInt();
-                    initialMatrix[i][j] = initial[counter];
-                    counter++;
+                initialMatrix[i][j] = initial[counter];
+                counter++;
             }
-            
         }
         
+        System.out.println("Initial State :");
         System.out.println(Arrays.deepToString(initialMatrix));
         
-        System.out.println("Enter the Goal State of 8 Puzzle,Please Enter Zero at the Empty location");
         for(int i=0;i<3;i++) {
-            for (int j = 0; j < 3; j++) {
-//                goalMatrix[i][j] = s.nextInt();
-//                goalMatrix[i][j] = 
+            for (int j = 0; j < 3; j++) {             
+                goalMatrix[i][j] = goal[count];
+                count++;
             }
         }
+        System.out.println("Goal State :");
+        System.out.println(Arrays.deepToString(goalMatrix));
 
-        // Making the root node
+
+        // generate node root
         Node root = new Node();
         root.setState(initialMatrix);
         root.setH(manhattanDist(initialMatrix,goalMatrix));
         root.setG(0);
         root.setF(root.getH()+root.getG());
 
-        //Making the goal Node
+        //generate node goal
         Node goalnode = new Node();
         goalnode.setState(goalMatrix);
         goalnode.setH(0);
 
-        //Creating a Priority Queue pq to store the frontier
         CompareNode nc = new CompareNode();
         PriorityQueue<Node> pq = new PriorityQueue<Node>(10, nc);
-
-        //Adding the root node to Priority Queue
+        
         pq.add(root);
 
-        //An ArrayList explored to store all the visited nodes
+        //array node yang sudah divisit
         ArrayList<Node> explored = new ArrayList<Node>(10000000);
         int c =0;
         int depth =0;
@@ -68,28 +62,28 @@ public class AStar {
 
         Node node = new Node();
         node = pq.poll();
-        while(!(Arrays.deepEquals(node.getState(),goalMatrix)))        //Check if the node state is same as goal state
+        while(!(Arrays.deepEquals(node.getState(),goalMatrix)))        //cek apakah state node sudah sama dengan goal
         {
-          explored.add(node);                                          //Add the node to explored list
+          explored.add(node);                                          //tambahkan node ke explored list
             ArrayList<Node> sucessorNodes = new ArrayList<Node>();
-            sucessorNodes = genChild(goalMatrix, node);                //Get the children of node
+            sucessorNodes = genChild(goalMatrix, node);                //generate node child
             for (Node child: sucessorNodes){
-                //Check if the child is goal Node
+                //cek apakah child adalah node goal
                 if(Arrays.deepEquals(child.getState(),goalMatrix))
                 {
                    isGoal =1;
                    depth= child.getG();
                    break;
                 }
-                if (priorityQueueContains(pq,child)) {                  //Check if child is already in Priority Queue
+                if (priorityQueueContains(pq,child)) {                  //cek apakah node child sudah di PQ
                     continue;
                 }
-                if (exploredContains(explored,child)) {                 //Check if child is already in Explored list
+                if (exploredContains(explored,child)) {                 //cek apakah node child sudah di list explored
                     continue;
                 }
-                pq.add(child);                                          //Add the child to Priority Queue
+                pq.add(child);                                          //tambahkan node child ke PQ
             }
-            if(isGoal==0) {                                             //Pop first element from Priority queue
+            if(isGoal==0) {                                             //pop elemen pertama di PQ
                 node = pq.poll();
             }
             else {
@@ -100,7 +94,7 @@ public class AStar {
         System.out.println("Number of Nodes Generated: "+(explored.size()+pq.size()));
         System.out.println("Number of Nodes Expanded: "+explored.size());
         System.out.println("Solution Path from Initial State to Goal State:");
-        //Setting values for Goal Node to be used while printing
+        //set nilai untuk node goal
         goalnode.setG(depth);
         goalnode.setF(goalnode.getG()+goalnode.getH());
         ArrayList<Node> p = new ArrayList<>();
@@ -111,13 +105,15 @@ public class AStar {
             node = node.getAncestor();
         }
         p.add(root);
-        Collections.reverse(p);                  //Reverse the ArrayList to print the path from initial to goal
+        Collections.reverse(p);                  //balik arraylist untuk output path dari initial ke goal
         for ( int i = 0 ; i < p.size() ; i++ )
         {
             printMatrix(p.get(i));
         }
 
     }
+    
+    //fungsi untuk shuffle initial state
     public static int[] randomizeArray(int[] array){
         Random rgen = new Random();
         
@@ -131,17 +127,7 @@ public class AStar {
         return array;
     }
     
-    public static int getRandomNumberInRange(int min, int max) 
-    {
-        if (min >= max) {
-            throw new IllegalArgumentException("max must be greater than min");
-        }
-        
-        Random r = new Random();
-        return r.nextInt((max - min) + 1) + min;
-        
-    }
-    //Method to check if particular node is already present in Priority Queue
+    //fungsi untuk ngecek apakah node ada di Priority Queue
     public static boolean priorityQueueContains(PriorityQueue<Node> pq, Node child)
     {
         for ( Node x: pq)
@@ -156,7 +142,7 @@ public class AStar {
         return false;
     }
 
-    //Method to check if particular node is already present in the Explored list
+    //fungsi untuk ngecek node apakah sudah di explore
     public static boolean exploredContains(ArrayList<Node> explore, Node child)
     {
         for ( Node x: explore)
@@ -170,6 +156,7 @@ public class AStar {
         }
         return false;
     }
+    
     public static void printMatrix(Node n)
     {
         int[][]a = n.getState();
@@ -189,13 +176,14 @@ public class AStar {
         System.out.println("F = " + n.getF());
         System.out.println();
     }
-    //Method to generate the allowed children of a node
+    
+    //fungsi generate node child
     public static ArrayList<Node> genChild(int[][] goalMatrix, Node node)
     {
         String s = new String();
         int [][] state= node.getState();
         ArrayList<Node> children = new ArrayList<>();
-        //find the position of Zero in the matrix
+        //mencari posisi nol di matrix
         for(int x = 0;x<3;x++)
         {
             for(int y = 0;y<3;y++)
@@ -206,7 +194,7 @@ public class AStar {
                 }
             }
         }
-        if(s.equals("00"))                      //Zero is at (0,0) position
+        if(s.equals("00"))                      //posisi nol di (0,0)
         {
             int[][] childa = new int[state.length][state[0].length];
             int[][] child1 = new int[state.length][state[0].length];
@@ -258,7 +246,7 @@ public class AStar {
             child_2.setF(child_2.getH()+child_2.getG());
             children.add(child_2);
         }
-        else if(s.equals("01"))   //Zero is at (0,1) position
+        else if(s.equals("01"))   //posisi nol di (0,1)
         {
             int[][] childb = new int[state.length][state[0].length];
             int[][] child3 = new int[state.length][state[0].length];
@@ -334,7 +322,7 @@ public class AStar {
             children.add(child_5);
         }
 
-        else if(s.equals("02"))  ///Zero is at (0,2) position
+        else if(s.equals("02"))  ///posisi nol di (0,2)
         {
             int[][] childc = new int[state.length][state[0].length];
             int[][] child6 = new int[state.length][state[0].length];
@@ -386,7 +374,7 @@ public class AStar {
             child_7.setF(child_7.getH()+child_7.getG());
             children.add(child_7);
         }
-        else if(s.equals("10"))    //Zero is at (1,0) position
+        else if(s.equals("10"))    //posisi nol di (1,0)
         {
             int[][] childd = new int[state.length][state[0].length];
             int[][] child8 = new int[state.length][state[0].length];
@@ -461,7 +449,7 @@ public class AStar {
             child_10.setF(child_10.getH()+child_10.getG());
             children.add(child_10);
         }
-        else if(s.equals("11"))  //Zero is at (1,1) position
+        else if(s.equals("11"))  //posisi nol di (1,1)
         {
             int[][] childe = new int[state.length][state[0].length];
             int[][] child11 = new int[state.length][state[0].length];
@@ -559,7 +547,7 @@ public class AStar {
             child_14.setF(child_14.getH()+child_14.getG());
             children.add(child_14);
         }
-        else if(s.equals("12"))    //Zero is at position (1,2)
+        else if(s.equals("12"))    //posisi nol di (1,2)
         {
             int[][] childf = new int[state.length][state[0].length];
             int[][] child15 = new int[state.length][state[0].length];
@@ -634,7 +622,7 @@ public class AStar {
             child_17.setF(child_17.getH()+child_17.getG());
             children.add(child_17);
         }
-        else if(s.equals("20"))    //Zero is at (2,0) position
+        else if(s.equals("20"))    //posisi nol di (2,0)
         {
             int[][] childg = new int[state.length][state[0].length];
             int[][] child18 = new int[state.length][state[0].length];
@@ -686,7 +674,7 @@ public class AStar {
             child_19.setF(child_19.getH()+child_19.getG());
             children.add(child_19);
         }
-        else if(s.equals("21"))   //Zero is at (2,1) position
+        else if(s.equals("21"))   //posisi nol di (2,1)
         {
             int[][] childh = new int[state.length][state[0].length];
             int[][] child20 = new int[state.length][state[0].length];
@@ -761,7 +749,7 @@ public class AStar {
             child_22.setF(child_22.getH()+child_22.getG());
             children.add(child_22);
         }
-        else if(s.equals("22"))     //Zero is at  (2,2) position
+        else if(s.equals("22"))     //posisi nol di (2,2)
         {
             int[][] childi = new int[state.length][state[0].length];
             int[][] child23 = new int[state.length][state[0].length];
@@ -815,7 +803,8 @@ public class AStar {
         }
         return children;
     }
-    //Method to find the Manhattan distance which is the heuristic for the given problem
+
+    //Fungsi untuk menghitung Manhattan distance
     public static int manhattanDist(int[][] curr, int[][] goal)
         {
         int manhattan = 0;
@@ -840,7 +829,8 @@ public class AStar {
 
     }
 }
-// A comparator class for the priority queue , we use f value as the comparator here
+
+// class comparator untuk priority queue menggunakan nilai f
 class CompareNode implements Comparator<Node>
 {
     public int compare(Node a, Node b)
